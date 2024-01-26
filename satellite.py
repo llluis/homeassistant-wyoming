@@ -59,6 +59,7 @@ class WyomingSatellite:
         self._muted_changed_event = asyncio.Event()
 
         self.device.set_is_muted_listener(self._muted_changed)
+        self.device.set_detection_listener(self._detection_called)
         self.device.set_pipeline_listener(self._pipeline_changed)
         self.device.set_audio_settings_listener(self._audio_settings_changed)
 
@@ -129,6 +130,15 @@ class WyomingSatellite:
 
         self._muted_changed_event.set()
         self._muted_changed_event.clear()
+
+    def _detection_called(self) -> None:
+        if self.is_running and (not self.device.is_muted):
+            # Inform client of triggered detection
+            detection = Detection(
+                name="remote",
+                timestamp=0,
+            )
+            self.hass.add_job(self._client.write_event(detection.event()))
 
     def _pipeline_changed(self) -> None:
         """Run when device pipeline changes."""

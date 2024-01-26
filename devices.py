@@ -26,6 +26,7 @@ class SatelliteDevice:
     _is_active_listener: Callable[[], None] | None = None
     _is_muted_listener: Callable[[], None] | None = None
     _pipeline_listener: Callable[[], None] | None = None
+    _detection_listener: Callable[[], None] | None = None
     _audio_settings_listener: Callable[[], None] | None = None
 
     @callback
@@ -43,6 +44,12 @@ class SatelliteDevice:
             self.is_muted = muted
             if self._is_muted_listener is not None:
                 self._is_muted_listener()
+
+    @callback
+    def press_detection(self) -> None:
+        """Set detection trigger."""
+        if self._detection_listener is not None:
+            self._detection_listener()
 
     @callback
     def set_pipeline_name(self, pipeline_name: str) -> None:
@@ -87,6 +94,11 @@ class SatelliteDevice:
         self._is_muted_listener = is_muted_listener
 
     @callback
+    def set_detection_listener(self, detection_listener: Callable[[], None]) -> None:
+        """Listen for updates to detection."""
+        self._detection_listener = detection_listener
+
+    @callback
     def set_pipeline_listener(self, pipeline_listener: Callable[[], None]) -> None:
         """Listen for updates to pipeline."""
         self._pipeline_listener = pipeline_listener
@@ -110,6 +122,13 @@ class SatelliteDevice:
         ent_reg = er.async_get(hass)
         return ent_reg.async_get_entity_id(
             "switch", DOMAIN, f"{self.satellite_id}-mute"
+        )
+
+    def get_detection_entity_id(self, hass: HomeAssistant) -> str | None:
+        """Return entity id for satellite detection button."""
+        ent_reg = er.async_get(hass)
+        return ent_reg.async_get_entity_id(
+            "button", DOMAIN, f"{self.satellite_id}-detection"
         )
 
     def get_pipeline_entity_id(self, hass: HomeAssistant) -> str | None:
