@@ -1,0 +1,11 @@
+press_button:
+  target:
+    entity:
+      domain: button
+      integration: wyoming
+  fields:
+    question_id:
+      required: true
+      example: ask_25
+      selector:
+        text:

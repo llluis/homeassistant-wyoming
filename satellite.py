@@ -3,7 +3,7 @@ import asyncio
 from collections.abc import AsyncGenerator
 import io
 import logging
-from typing import Final
+from typing import Final, Optional
 import wave
 
 from wyoming.asr import Transcribe, Transcript
@@ -17,15 +17,16 @@ from wyoming.tts import Synthesize, SynthesizeVoice
 from wyoming.vad import VoiceStarted, VoiceStopped
 from wyoming.wake import Detect, Detection
 
-from homeassistant.components import assist_pipeline, stt, tts
+from homeassistant.components import assist_pipeline, stt, ffmpeg, tts
 from homeassistant.components.assist_pipeline import select as pipeline_select
+from homeassistant.components import media_source
 from homeassistant.core import Context, HomeAssistant
 
 from .const import DOMAIN
 from .data import WyomingService
 from .devices import SatelliteDevice
 
-_LOGGER = logging.getLogger()
+_LOGGER = logging.getLogger(__name__)
 
 _SAMPLES_PER_CHUNK: Final = 1024
 _RECONNECT_SECONDS: Final = 10
@@ -66,6 +67,11 @@ class WyomingSatellite:
         self.device.set_is_muted_listener(self._muted_changed)
         self.device.set_pipeline_listener(self._pipeline_changed)
         self.device.set_audio_settings_listener(self._audio_settings_changed)
+
+        self.device.set_detection_listener(self._detection_called)
+        self.device.set_ask_listener(self._ask_called)
+
+        self.device.set_play_media_listener(self._play_media)
 
     async def run(self) -> None:
         """Run and maintain a connection to satellite."""
@@ -134,6 +140,37 @@ class WyomingSatellite:
         _LOGGER.debug("Satellite task stopped")
 
     # -------------------------------------------------------------------------
+
+    def _play_media(self, media_id: str) -> None:
+        # """Send the play command with media url to the media player."""
+        if media_source.is_media_source_id(media_id):
+            # media = media_source.async_resolve_media(
+            #     self.hass, media_id, None
+            # )
+            # _LOGGER.debug("media result %s", media)
+
+            self.hass.add_job(self._stream_tts(media_id))
+        else:
+            _LOGGER.warning("media_id not supported: %s", media_id)
+
+
+    def _detection_called(self) -> None:
+        if self.is_running and (not self.device.is_muted) and (not self._is_pipeline_running): 
+            # Inform client of triggered detection
+            detection = Detection(
+                name="remote",
+                timestamp=0,
+            )
+            self.hass.add_job(self._client.write_event(detection.event()))
+
+    def _ask_called(self, qid: Optional[str] = None) -> None:
+        if self.is_running and (not self.device.is_muted) and (not self._is_pipeline_running): 
+            # Ask client of answer to a question
+            ask = Detection(
+                name= qid,
+                timestamp=0,
+            )
+            self.hass.add_job(self._client.write_event(ask.event()))
 
     def _send_pause(self) -> None:
         """Send a pause message to satellite."""
@@ -350,6 +387,17 @@ class WyomingSatellite:
         """Translate pipeline events into Wyoming events."""
         assert self._client is not None
 
+        # Fires event in Home Assistant bus
+        event_data = {
+            "satellite_name": self.service.get_name(),
+            "pipeline_event": event,
+            # "service": {
+            #     "host": self.service.host,
+            #     "info": self.service.info,
+            # }
+        }
+        self.hass.bus.fire("wyoming-satellite-pipeline", event_data)
+
         if event.type == assist_pipeline.PipelineEventType.RUN_END:
             # Pipeline run is complete
             self._is_pipeline_running = False
@@ -457,6 +505,12 @@ class WyomingSatellite:
         assert self._client is not None
 
         extension, data = await tts.async_get_media_source_audio(self.hass, media_id)
+
+        if extension == "mp3":
+            data = await tts.async_convert_audio(self.hass, "mp3", data, "wav")
+            extension = "wav"
+
+
         if extension != "wav":
             raise ValueError(f"Cannot stream audio format to satellite: {extension}")
 

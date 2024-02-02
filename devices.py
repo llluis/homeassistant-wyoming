@@ -1,6 +1,8 @@
 """Class to manage satellite devices."""
 from __future__ import annotations
 
+from typing import Optional
+
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -27,6 +29,27 @@ class SatelliteDevice:
     _is_muted_listener: Callable[[], None] | None = None
     _pipeline_listener: Callable[[], None] | None = None
     _audio_settings_listener: Callable[[], None] | None = None
+    _play_media_listener: Callable[[], None] | None = None
+    _detection_listener: Callable[[], None] | None = None
+    _ask_listener: Callable[[], None] | None = None
+
+    @callback
+    def play_media(self, media_id: str) -> None:
+        """Send the media_id to the satellite."""
+        if self._play_media_listener is not None:
+            self._play_media_listener(media_id)
+
+    @callback
+    def press_detection(self) -> None:
+        """Set detection trigger."""
+        if self._detection_listener is not None:
+            self._detection_listener()
+
+    @callback
+    def press_ask(self, question_id: Optional[str] = None) -> None:
+        """Set ask detection trigger."""
+        if self._ask_listener is not None:
+            self._ask_listener(question_id)
 
     @callback
     def set_is_active(self, active: bool) -> None:
@@ -77,6 +100,21 @@ class SatelliteDevice:
                 self._audio_settings_listener()
 
     @callback
+    def set_play_media_listener(self, play_media_listener: Callable[[], None]) -> None:
+        """Listen for updates to play media."""
+        self._play_media_listener = play_media_listener
+
+    @callback
+    def set_detection_listener(self, detection_listener: Callable[[], None]) -> None:
+        """Listen for updates to detection."""
+        self._detection_listener = detection_listener
+
+    @callback
+    def set_ask_listener(self, ask_listener: Callable[[], None]) -> None:
+        """Listen for updates to detection."""
+        self._ask_listener = ask_listener
+
+    @callback
     def set_is_active_listener(self, is_active_listener: Callable[[], None]) -> None:
         """Listen for updates to is_active."""
         self._is_active_listener = is_active_listener
@@ -97,6 +135,27 @@ class SatelliteDevice:
     ) -> None:
         """Listen for updates to audio settings."""
         self._audio_settings_listener = audio_settings_listener
+
+    def get_play_media_entity_id(self, hass: HomeAssistant) -> str | None:
+        """Return entity id for satellite media player."""
+        ent_reg = er.async_get(hass)
+        return ent_reg.async_get_entity_id(
+            "media_player", DOMAIN, f"{self.satellite_id}-mplayer"
+        )
+
+    def get_detection_entity_id(self, hass: HomeAssistant) -> str | None:
+        """Return entity id for satellite detection button."""
+        ent_reg = er.async_get(hass)
+        return ent_reg.async_get_entity_id(
+            "button", DOMAIN, f"{self.satellite_id}-detection"
+        )
+
+    def get_ask_entity_id(self, hass: HomeAssistant) -> str | None:
+        """Return entity id for satellite ask detection button."""
+        ent_reg = er.async_get(hass)
+        return ent_reg.async_get_entity_id(
+            "button", DOMAIN, f"{self.satellite_id}-ask"
+        )
 
     def get_assist_in_progress_entity_id(self, hass: HomeAssistant) -> str | None:
         """Return entity id for assist in progress binary sensor."""

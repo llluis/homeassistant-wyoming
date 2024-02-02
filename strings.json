@@ -3,8 +3,8 @@
     "step": {
       "user": {
         "data": {
-          "host": "[%key:common::config_flow::data::host%]",
-          "port": "[%key:common::config_flow::data::port%]"
+          "host": "Host",
+          "port": "Port"
         }
       },
       "hassio_confirm": {
@@ -16,10 +16,10 @@
       }
     },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]"
+      "cannot_connect": "Failed to connect"
     },
     "abort": {
-      "already_configured": "[%key:common::config_flow::abort::already_configured_service%]",
+      "already_configured": "Service is already configured",
       "no_services": "No services found at endpoint",
       "no_port": "No port for endpoint"
     }
@@ -27,14 +27,27 @@
   "entity": {
     "binary_sensor": {
       "assist_in_progress": {
-        "name": "[%key:component::assist_pipeline::entity::binary_sensor::assist_in_progress::name%]"
+        "name": "Assist in progress"
+      }
+    },
+    "button": {
+      "detection": {
+        "name": "Trigger detection"
+      },
+      "ask": {
+        "name": "Trigger ask question"
+      }
+    },
+    "media_player": {
+      "mplayer": {
+        "name": "Satellite Speaker"
       }
     },
     "select": {
       "pipeline": {
-        "name": "[%key:component::assist_pipeline::entity::select::pipeline::name%]",
+        "name": "Assist pipeline",
         "state": {
-          "preferred": "[%key:component::assist_pipeline::entity::select::pipeline::state::preferred%]"
+          "preferred": "Preferred"
         }
       },
       "noise_suppression_level": {
