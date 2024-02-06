@@ -88,7 +88,7 @@ class WyomingSatelliteAskButton(
         """Call when entity about to be added to hass."""
         await super().async_added_to_hass()
 
-    async def async_press(self, question_id: Optional[str] = None) -> None:
+    async def async_press(self, question_id: Optional[str] = "ask") -> None:
         """Press the button."""
         self._device.press_ask(question_id)
 
