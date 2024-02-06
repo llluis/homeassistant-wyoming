@@ -390,7 +390,9 @@ class WyomingSatellite:
         # Fires event in Home Assistant bus
         event_data = {
             "satellite_name": self.service.get_name(),
-            "pipeline_event": event,
+            "type": event.type,
+            "data": event.data,
+            "timestamp": event.timestamp,
             # "service": {
             #     "host": self.service.host,
             #     "info": self.service.info,
