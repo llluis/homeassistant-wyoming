@@ -29,9 +29,8 @@ class SatelliteDevice:
     _is_muted_listener: Callable[[], None] | None = None
     _pipeline_listener: Callable[[], None] | None = None
     _audio_settings_listener: Callable[[], None] | None = None
-    _play_media_listener: Callable[[], None] | None = None
-    _detection_listener: Callable[[], None] | None = None
-    _ask_listener: Callable[[], None] | None = None
+    _play_media_listener: Callable[[str], None] | None = None
+    _remote_trigger_listener: Callable[[str | None], None] | None = None
 
     @callback
     def play_media(self, media_id: str) -> None:
@@ -40,16 +39,10 @@ class SatelliteDevice:
             self._play_media_listener(media_id)
 
     @callback
-    def press_detection(self) -> None:
-        """Set detection trigger."""
-        if self._detection_listener is not None:
-            self._detection_listener()
-
-    @callback
-    def press_ask(self, question_id: Optional[str] = None) -> None:
-        """Set ask detection trigger."""
-        if self._ask_listener is not None:
-            self._ask_listener(question_id)
+    def remote_trigger(self, question_id: Optional[str] = None) -> None:
+        """Remote Trigger the Detection and bypass wake word."""
+        if self._remote_trigger_listener is not None:
+            self._remote_trigger_listener(question_id)
 
     @callback
     def set_is_active(self, active: bool) -> None:
@@ -100,19 +93,14 @@ class SatelliteDevice:
                 self._audio_settings_listener()
 
     @callback
-    def set_play_media_listener(self, play_media_listener: Callable[[], None]) -> None:
+    def set_play_media_listener(self, play_media_listener: Callable[[str], None]) -> None:
         """Listen for updates to play media."""
         self._play_media_listener = play_media_listener
 
     @callback
-    def set_detection_listener(self, detection_listener: Callable[[], None]) -> None:
-        """Listen for updates to detection."""
-        self._detection_listener = detection_listener
-
-    @callback
-    def set_ask_listener(self, ask_listener: Callable[[], None]) -> None:
-        """Listen for updates to detection."""
-        self._ask_listener = ask_listener
+    def set_remote_trigger_listener(self, remote_trigger_listener: Callable[[str | None], None]) -> None:
+        """Listen for updates to remote trigger."""
+        self._remote_trigger_listener = remote_trigger_listener
 
     @callback
     def set_is_active_listener(self, is_active_listener: Callable[[], None]) -> None:
@@ -141,20 +129,6 @@ class SatelliteDevice:
         ent_reg = er.async_get(hass)
         return ent_reg.async_get_entity_id(
             "media_player", DOMAIN, f"{self.satellite_id}-mplayer"
-        )
-
-    def get_detection_entity_id(self, hass: HomeAssistant) -> str | None:
-        """Return entity id for satellite detection button."""
-        ent_reg = er.async_get(hass)
-        return ent_reg.async_get_entity_id(
-            "button", DOMAIN, f"{self.satellite_id}-detection"
-        )
-
-    def get_ask_entity_id(self, hass: HomeAssistant) -> str | None:
-        """Return entity id for satellite ask detection button."""
-        ent_reg = er.async_get(hass)
-        return ent_reg.async_get_entity_id(
-            "button", DOMAIN, f"{self.satellite_id}-ask"
         )
 
     def get_assist_in_progress_entity_id(self, hass: HomeAssistant) -> str | None:

@@ -1,79 +1,82 @@
 {
-    "config": {
-      "step": {
-        "user": {
-          "data": {
-            "host": "Host",
-            "port": "Port"
-          }
-        },
-        "hassio_confirm": {
-          "description": "Do you want to configure Home Assistant to connect to the Wyoming service provided by the add-on: {addon}?"
-        },
-        "zeroconf_confirm": {
-          "description": "Do you want to configure Home Assistant to connect to the Wyoming service {name}?",
-          "title": "Discovered Wyoming service"
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "host": "Host",
+          "port": "Port"
         }
       },
-      "error": {
-        "cannot_connect": "Failed to connect"
+      "hassio_confirm": {
+        "description": "Do you want to configure Home Assistant to connect to the Wyoming service provided by the add-on: {addon}?"
       },
-      "abort": {
-        "already_configured": "Service is already configured",
-        "no_services": "No services found at endpoint",
-        "no_port": "No port for endpoint"
+      "zeroconf_confirm": {
+        "description": "Do you want to configure Home Assistant to connect to the Wyoming service {name}?",
+        "title": "Discovered Wyoming service"
       }
     },
-    "entity": {
-      "binary_sensor": {
-        "assist_in_progress": {
-          "name": "Assist in progress"
+    "error": {
+      "cannot_connect": "Failed to connect"
+    },
+    "abort": {
+      "already_configured": "Service is already configured",
+      "no_services": "No services found at endpoint",
+      "no_port": "No port for endpoint"
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "assist_in_progress": {
+        "name": "Assist in progress"
+      }
+    },
+    "media_player": {
+      "speaker": {
+        "name": "Speaker"
+      }
+    },
+    "select": {
+      "pipeline": {
+        "name": "Assist pipeline",
+        "state": {
+          "preferred": "Preferred"
         }
       },
-      "button": {
-        "detection": {
-          "name": "Trigger detection"
-        },
-        "ask": {
-          "name": "Trigger ask question"
+      "noise_suppression_level": {
+        "name": "Noise suppression level",
+        "state": {
+          "off": "Off",
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High",
+          "max": "Max"
         }
+      }
+    },
+    "switch": {
+      "mute": {
+        "name": "Mute"
+      }
+    },
+    "number": {
+      "auto_gain": {
+        "name": "Auto gain"
       },
-      "media_player": {
-        "mplayer": {
-          "name": "Satellite Speaker"
-        }
-      },
-      "select": {
-        "pipeline": {
-          "name": "Assist pipeline",
-          "state": {
-            "preferred": "Preferred"
-          }
-        },
-        "noise_suppression_level": {
-          "name": "Noise suppression level",
-          "state": {
-            "off": "Off",
-            "low": "Low",
-            "medium": "Medium",
-            "high": "High",
-            "max": "Max"
-          }
-        }
-      },
-      "switch": {
-        "mute": {
-          "name": "Mute"
-        }
-      },
-      "number": {
-        "auto_gain": {
-          "name": "Auto gain"
-        },
-        "volume_multiplier": {
-          "name": "Mic volume"
+      "volume_multiplier": {
+        "name": "Mic volume"
+      }
+    }
+  },
+  "services": {
+    "remote_trigger": {
+      "name": "Remote trigger",
+      "description": "Remote triggers the satellite and bypass Wake Word detection.",
+      "fields": {
+        "question_id": {
+          "name": "Question ID",
+          "description": "Question ID to match reply. If supplied satellite will stop at the STT phase"
         }
       }
     }
   }
-  
+}

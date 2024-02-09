@@ -69,9 +69,7 @@ class WyomingSatellite:
         self.device.set_pipeline_listener(self._pipeline_changed)
         self.device.set_audio_settings_listener(self._audio_settings_changed)
 
-        self.device.set_detection_listener(self._detection_called)
-        self.device.set_ask_listener(self._ask_called)
-
+        self.device.set_remote_trigger_listener(self._remote_trigger)
         self.device.set_play_media_listener(self._play_media)
 
     async def run(self) -> None:
@@ -155,23 +153,15 @@ class WyomingSatellite:
             _LOGGER.warning("media_id not supported: %s", media_id)
 
 
-    def _detection_called(self) -> None:
-        if self.is_running and (not self.device.is_muted) and (not self._is_pipeline_running): 
-            # Inform client of triggered detection
-            detection = Detection(
-                name="remote",
-                timestamp=0,
-            )
-            self.hass.add_job(self._client.write_event(detection.event()))
-
-    def _ask_called(self, qid: Optional[str] = None) -> None:
+    def _remote_trigger(self, question_id: Optional[str] = None) -> None:
         if self.is_running and (not self.device.is_muted) and (not self._is_pipeline_running): 
             # Ask client of answer to a question
             ask = Detection(
-                name= qid,
-                timestamp=0,
-            )
-            self.hass.add_job(self._client.write_event(ask.event()))
+                name = "remote",
+            ).event()
+            if question_id is not None:
+                ask.data['question_id'] = question_id
+            self.hass.add_job(self._client.write_event(ask))
 
     def _send_pause(self) -> None:
         """Send a pause message to satellite."""

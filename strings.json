@@ -30,17 +30,9 @@
         "name": "Assist in progress"
       }
     },
-    "button": {
-      "detection": {
-        "name": "Trigger detection"
-      },
-      "ask": {
-        "name": "Trigger ask question"
-      }
-    },
     "media_player": {
-      "mplayer": {
-        "name": "Satellite Speaker"
+      "speaker": {
+        "name": "Speaker"
       }
     },
     "select": {
@@ -72,6 +64,18 @@
       },
       "volume_multiplier": {
         "name": "Mic volume"
+      }
+    }
+  },
+  "services": {
+    "remote_trigger": {
+      "name": "Remote trigger",
+      "description": "Remote triggers the satellite and bypass Wake Word detection.",
+      "fields": {
+        "question_id": {
+          "name": "Question ID",
+          "description": "Question ID to match reply. If supplied satellite will stop at the STT phase"
+        }
       }
     }
   }

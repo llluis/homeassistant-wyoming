@@ -19,7 +19,6 @@ _LOGGER = logging.getLogger(__name__)
 
 SATELLITE_PLATFORMS = [
     Platform.BINARY_SENSOR,
-    Platform.BUTTON,
     Platform.MEDIA_PLAYER,
     Platform.SELECT,
     Platform.SWITCH,

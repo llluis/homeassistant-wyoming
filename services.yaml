@@ -1,11 +1,11 @@
-press_button:
+remote_trigger:
   target:
     entity:
-      domain: button
+      domain: media_player
       integration: wyoming
   fields:
     question_id:
-      required: true
+      required: false
       example: ask_25
       selector:
         text:
