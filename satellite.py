@@ -13,11 +13,12 @@ from wyoming.error import Error
 from wyoming.ping import Ping, Pong
 from wyoming.pipeline import PipelineStage, RunPipeline
 from wyoming.satellite import PauseSatellite, RunSatellite
+from wyoming.snd import Played
 from wyoming.tts import Synthesize, SynthesizeVoice
 from wyoming.vad import VoiceStarted, VoiceStopped
 from wyoming.wake import Detect, Detection
 
-from homeassistant.components import assist_pipeline, stt, ffmpeg, tts
+from homeassistant.components import assist_pipeline, stt, tts
 from homeassistant.components.assist_pipeline import select as pipeline_select
 from homeassistant.components import media_source
 from homeassistant.core import Context, HomeAssistant
@@ -280,6 +281,12 @@ class WyomingSatellite:
                 if client_event is None:
                     raise ConnectionResetError("Satellite disconnected")
 
+                # Fires event in Home Assistant bus
+                event_data = {
+                    "satellite_name": self.service.get_name(),
+                    "type": client_event.type,
+                }
+
                 if Pong.is_type(client_event.type):
                     # Satellite is still there, send next ping
                     send_ping = True
@@ -302,6 +309,8 @@ class WyomingSatellite:
                     # Stop pipeline
                     _LOGGER.debug("Client requested pipeline to stop")
                     self._audio_queue.put_nowait(b"")
+                elif Played.is_type(client_event.type):
+                    self.hass.bus.fire("wyoming-satellite", event_data)
                 else:
                     _LOGGER.debug("Unexpected event from satellite: %s", client_event)
 
