@@ -152,15 +152,18 @@ class WyomingSatellite:
         else:
             _LOGGER.warning("media_id not supported: %s", media_id)
 
-
     def _remote_trigger(self, question_id: Optional[str] = None) -> None:
-        if self.is_running and (not self.device.is_muted) and (not self._is_pipeline_running): 
+        if (
+            self.is_running
+            and (not self.device.is_muted)
+            and (not self._is_pipeline_running)
+        ):
             # Ask client of answer to a question
             ask = Detection(
-                name = "remote",
+                name="remote",
             ).event()
             if question_id is not None:
-                ask.data['question_id'] = question_id
+                ask.data["question_id"] = question_id
             self.hass.add_job(self._client.write_event(ask))
 
     def _send_pause(self) -> None:
@@ -508,9 +511,9 @@ class WyomingSatellite:
         extension, data = await tts.async_get_media_source_audio(self.hass, media_id)
 
         if extension == "mp3":
+            _LOGGER.debug("Converting mp3 to wav")
             data = await tts.async_convert_audio(self.hass, "mp3", data, "wav")
             extension = "wav"
-
 
         if extension != "wav":
             raise ValueError(f"Cannot stream audio format to satellite: {extension}")
@@ -522,14 +525,15 @@ class WyomingSatellite:
             _LOGGER.debug("Streaming %s TTS sample(s)", wav_file.getnframes())
 
             timestamp = 0
-            await self._client.write_event(
-                AudioStart(
-                    rate=sample_rate,
-                    width=sample_width,
-                    channels=sample_channels,
-                    timestamp=timestamp,
-                ).event()
-            )
+            audiostart = AudioStart(
+                rate=sample_rate,
+                width=sample_width,
+                channels=sample_channels,
+                timestamp=timestamp,
+            ).event()
+            audiostart.data["speaker_vol"] = self.device.speaker_volume
+
+            await self._client.write_event(audiostart)
 
             # Stream audio chunks
             while audio_bytes := wav_file.readframes(_SAMPLES_PER_CHUNK):

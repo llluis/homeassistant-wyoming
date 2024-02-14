@@ -64,6 +64,9 @@
       },
       "volume_multiplier": {
         "name": "Mic volume"
+      },
+      "speaker_volume": {
+        "name": "Speaker volume"
       }
     }
   },

@@ -24,6 +24,7 @@ class SatelliteDevice:
     noise_suppression_level: int = 0
     auto_gain: int = 0
     volume_multiplier: float = 1.0
+    speaker_volume: float = 1.0
 
     _is_active_listener: Callable[[], None] | None = None
     _is_muted_listener: Callable[[], None] | None = None
@@ -89,6 +90,14 @@ class SatelliteDevice:
         """Set auto gain amount."""
         if volume_multiplier != self.volume_multiplier:
             self.volume_multiplier = volume_multiplier
+            if self._audio_settings_listener is not None:
+                self._audio_settings_listener()
+
+    @callback
+    def set_speaker_volume(self, speaker_volume: float) -> None:
+        """Set speaker volume."""
+        if speaker_volume != self.speaker_volume:
+            self.speaker_volume = speaker_volume
             if self._audio_settings_listener is not None:
                 self._audio_settings_listener()
 
@@ -171,4 +180,11 @@ class SatelliteDevice:
         ent_reg = er.async_get(hass)
         return ent_reg.async_get_entity_id(
             "number", DOMAIN, f"{self.satellite_id}-volume_multiplier"
+        )
+
+    def get_speaker_volume_entity_id(self, hass: HomeAssistant) -> str | None:
+        """Return entity id for speaker volume."""
+        ent_reg = er.async_get(hass)
+        return ent_reg.async_get_entity_id(
+            "number", DOMAIN, f"{self.satellite_id}-speaker_volume"
         )
