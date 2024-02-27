@@ -274,12 +274,6 @@ class WyomingSatellite:
                 if client_event is None:
                     raise ConnectionResetError("Satellite disconnected")
 
-                # Fires event in Home Assistant bus
-                event_data = {
-                    "satellite_name": self.service.get_name(),
-                    "type": client_event.type,
-                }
-
                 if Pong.is_type(client_event.type):
                     # Satellite is still there, send next ping
                     send_ping = True
@@ -303,6 +297,11 @@ class WyomingSatellite:
                     _LOGGER.debug("Client requested pipeline to stop")
                     self._audio_queue.put_nowait(b"")
                 elif Played.is_type(client_event.type):
+                    # Fires event in Home Assistant bus
+                    event_data = {
+                        "satellite_name": self.service.get_name(),
+                        "type": client_event.type,
+                    }
                     self.hass.bus.fire("wyoming-satellite", event_data)
                 else:
                     _LOGGER.debug("Unexpected event from satellite: %s", client_event)
